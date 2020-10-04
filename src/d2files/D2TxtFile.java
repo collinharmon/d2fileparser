@@ -76,30 +76,55 @@ public final class D2TxtFile
         if(read)return;
         sMod = pMod;
         MISC = new D2TxtFile("Misc");
+        MISC.readInData();
         ARMOR = new D2TxtFile("armor");
+        ARMOR.readInData();
         WEAPONS = new D2TxtFile("weapons");
+        WEAPONS.readInData();
         UNIQUES = new D2TxtFile("UniqueItems");
+        UNIQUES.readInData();
         SETITEMS = new D2TxtFile("SetItems");
+        SETITEMS.readInData();
         PREFIX = new D2TxtFile("MagicPrefix");
+        PREFIX.readInData();
         SUFFIX = new D2TxtFile("MagicSuffix");
+        SUFFIX.readInData();
         RAREPREFIX = new D2TxtFile("RarePrefix");
+        RAREPREFIX.readInData();
         RARESUFFIX = new D2TxtFile("RareSuffix");
+        RARESUFFIX.readInData();
         RUNES = new D2TxtFile("Runes");
+        RUNES.readInData();
         ITEM_TYPES = new D2TxtFile("ItemTypes");
+        ITEM_TYPES.readInData();
         ITEM_STAT_COST = new D2TxtFile("ItemStatCost");
+        ITEM_STAT_COST.readInData();
         SKILL_DESC = new D2TxtFile("SkillDesc");
+        SKILL_DESC.readInData();
         SKILLS = new D2TxtFile("Skills");
+        SKILLS.readInData();
         GEMS = new D2TxtFile("Gems");
+        GEMS.readInData();
         PROPS = new D2TxtFile("Properties");
+        PROPS.readInData();
         MONSTATS = new D2TxtFile("MonStats");
+        MONSTATS.readInData();
         TCS = new D2TxtFile("TreasureClassEx");
+        TCS.readInData();
         LEVELS = new D2TxtFile("Levels");
+        LEVELS.readInData();
         SUPUNIQ = new D2TxtFile("SuperUniques");
+        SUPUNIQ.readInData();
         HIRE = new D2TxtFile("Hireling");
+        HIRE.readInData();
         FULLSET = new D2TxtFile("Sets");
+        FULLSET.readInData();
         CHARSTATS = new D2TxtFile("CharStats");
+        CHARSTATS.readInData();
         AUTOMAGIC = new D2TxtFile("automagic");
+        AUTOMAGIC.readInData();
         ITEMRATIO = new D2TxtFile("ItemRatio");
+        ITEMRATIO.readInData();
 
         read = true;
     }
@@ -252,7 +277,8 @@ public final class D2TxtFile
         catch (Exception pEx)
         {
             //D2FileManager.displayErrorDialog(pEx);
-            System.err.println("Line255 in D2 text file -- deprecated." );
+            System.err.println("Error with FileReader Creation fail");
+            pEx.printStackTrace();
         }
     }
 

@@ -35,7 +35,7 @@ import d2files.*;
 //stores a filename, a bitreader
 //to read from that file, and
 //a vector of items
-public class D2Character extends /*D2ItemListAdapter*/
+public class D2Character /*extends D2ItemListAdapter*/
 {
     public static final int BODY_INV_CONTENT   = 1;
     public static final int BODY_BELT_CONTENT  = 2; // the belt content
@@ -125,15 +125,21 @@ public class D2Character extends /*D2ItemListAdapter*/
     private byte iBetweenItems[];
     private byte iAfterItems[];
 
+    /*Start of my fuckery*/
+    private String iFileName;
+
     public D2Character(String pFileName) throws Exception{
-        super( pFileName );
+        //super( pFileName );
+        iFileName = pFileName;
         if ( iFileName == null || !iFileName.toLowerCase().endsWith(".d2s"))throw new Exception("Incorrect Character file name");
         iCharItems = new ArrayList();
         iMercItems = new ArrayList();
         iReader = new D2BitReader(iFileName);
+        D2TxtFile.constructTxtFiles("d2111");
+        D2TblFile.readAllFiles("d2111");
         readChar();
         // clear status
-        setModified(false);
+        //setModified(false);
     }
 
     private void readChar() throws Exception{
@@ -800,7 +806,7 @@ public class D2Character extends /*D2ItemListAdapter*/
         return false;
     }
 
-    public void removeItem(D2Item pItem){
+    /*public void removeItem(D2Item pItem){
         if ( iCharItems.remove(pItem) ){
             unmarkCharGrid(pItem);
         }else{
@@ -817,7 +823,7 @@ public class D2Character extends /*D2ItemListAdapter*/
             iCharCursorItem.set_location((short) 4);
             iCharCursorItem.set_body_position((short) 0);
         }
-    }
+    }*/
     // clear all the grids
     // grids keep track of which spots that items
     // can be place are occupied
@@ -1025,29 +1031,24 @@ public class D2Character extends /*D2ItemListAdapter*/
     public void addCharItem(D2Item pItem){
         iCharItems.add(pItem);
         pItem.setCharLvl((int)iCharLevel);
-        setModified(true);
     }
 
     public void addCorpseItem(D2Item pItem){
         iCorpseItems .add(pItem);
         pItem.setCharLvl((int)iCharLevel);
-        setModified(true);
     }
 
     public void addMercItem(D2Item pItem){
         iMercItems.add(pItem);
         pItem.setCharLvl((int)iCharLevel);
-        setModified(true);
     }
 
     public void removeCharItem(int i){
         iCharItems.remove(i);
-        setModified(true);
     }
 
     public void removeMercItem(int i){
         iMercItems.remove(i);
-        setModified(true);
     }
 
     public boolean checkCharGrid(int panel, int x, int y, D2Item pItem){
@@ -1322,6 +1323,7 @@ public class D2Character extends /*D2ItemListAdapter*/
         return -1;
     }
 
+    /*
     public void saveInternal(D2Project pProject)
     {
         // backup file
@@ -1423,7 +1425,7 @@ public class D2Character extends /*D2ItemListAdapter*/
         if ( pGoldBank > getGoldBankMax())throw new Exception("gold must be smaller than max" + getGoldBankMax() );
         iReadStats[15] = pGoldBank;
         setModified(true);
-    }
+    }*/
 
     public int getGoldBankMax(){
         // int lMaxGold = 50000;
