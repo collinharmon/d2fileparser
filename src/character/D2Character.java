@@ -135,8 +135,6 @@ public class D2Character /*extends D2ItemListAdapter*/
         iCharItems = new ArrayList();
         iMercItems = new ArrayList();
         iReader = new D2BitReader(iFileName);
-        D2TxtFile.constructTxtFiles("d2111");
-        D2TblFile.readAllFiles("d2111");
         readChar();
         // clear status
         //setModified(false);

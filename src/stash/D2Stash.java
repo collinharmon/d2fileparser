@@ -40,6 +40,9 @@ public class D2Stash
     private D2BitReader	iBR;
     private boolean		iHC;
     private boolean		iSC;
+    private boolean		iIsSharedStash;
+    private long numStashes = 1;  //one by default
+    private int iSharedGold;
 
     private int			iCharLvl = 75; // default char lvl for properties
 
@@ -53,35 +56,56 @@ public class D2Stash
     public D2Stash(String pFileName) throws Exception
     {
         iFileName = pFileName;
-        if ( iFileName == null || !iFileName.toLowerCase().endsWith(".d2x") )
+
+        if ( iFileName != null && (iFileName.toLowerCase().endsWith(".d2x") || iFileName.toLowerCase().endsWith(".sss")))
+        {
+            iItems = new ArrayList();
+
+            lFile = new File(iFileName);
+
+            iBR = new D2BitReader(iFileName);
+
+            if ( !iBR.isNewFile() )
+            {
+                iBR.set_byte_pos(0);
+                if(iFileName.toLowerCase().endsWith(".d2x"))
+                {
+                    iBR.set_byte_pos(10);
+                }
+                else
+                {
+                    iIsSharedStash = true;
+                    iBR.set_byte_pos(4);
+                    byte lFileVersion[] = iBR.get_bytes(2);
+                    if((Byte.toUnsignedInt(lFileVersion[1]) << 8 | Byte.toUnsignedInt(lFileVersion[0])) == 12592) //shared gold == 0
+                    {
+                        iSharedGold = 0;
+                        iBR.set_byte_pos(6);  //numStashes at 0x6 when shared gold == 0
+                    }
+                    else
+                    {
+                        iBR.set_byte_pos(6);
+                        byte lSharedGoldAmount[] = iBR.get_bytes(4);
+                        iSharedGold = Byte.toUnsignedInt(lSharedGoldAmount[3]) << 24 | Byte.toUnsignedInt(lSharedGoldAmount[2]) << 16 |
+                                Byte.toUnsignedInt(lSharedGoldAmount[1]) << 8 | Byte.toUnsignedInt(lSharedGoldAmount[0]);
+                        iBR.set_byte_pos(10); //numStashes at 0xA when shared gold == 0
+                    }
+                }
+                byte lBytes[] = iBR.get_bytes(4);
+
+                numStashes = Byte.toUnsignedInt(lBytes[3]) << 24 | Byte.toUnsignedInt(lBytes[2]) << 16 | Byte.toUnsignedInt(lBytes[1]) << 8 | Byte.toUnsignedInt(lBytes[0]);
+
+                if(numStashes > 0)
+                {
+                    readAtmaItems(numStashes);
+                }
+
+
+            }
+        }
+        else
         {
             throw new Exception("Incorrect Stash file name");
-        }
-        iItems = new ArrayList();
-
-        lFile = new File(iFileName);
-
-        iSC = lFile.getName().toLowerCase().startsWith("sc_");
-        iHC = lFile.getName().toLowerCase().startsWith("hc_");
-
-        if ( !iSC && !iHC )
-        {
-            iSC = true;
-            iHC = true;
-        }
-
-        iBR = new D2BitReader(iFileName);
-
-        if ( !iBR.isNewFile() )
-        {
-            iBR.set_byte_pos(0);
-            byte lBytes[] = iBR.get_bytes(3);
-            String lStart = new String(lBytes);
-            if ( "D2X".equals(lStart) )
-            {
-                readAtmaItems();
-            }
-            // clear status
         }
     }
 
@@ -140,32 +164,41 @@ public class D2Stash
         return iItems.size();
     }
 
-    private void readAtmaItems() throws Exception
+    public int getSharedGold()
+    {
+        return iSharedGold;
+    }
+
+    public long getNrStashes()
+    {
+        return numStashes;
+    }
+
+    public boolean isSharedStash()
+    {
+        return iIsSharedStash;
+    }
+
+    private void readAtmaItems(long numStashes) throws Exception
     {
 
-        iBR.set_byte_pos( 7 );
-        long lOriginal = iBR.read( 32 );
-
-        long lCalculated = calculateAtmaCheckSum();
-
-        if ( lOriginal == lCalculated )
+        for(long i = 0; i < numStashes; i++)
         {
-            iBR.set_byte_pos(3);
+            int lNumItems = 0;
+            int lCurrentItem = iBR.findNextFlag("JM", iBR.get_byte_pos());
+            if (lCurrentItem == -1) continue;
+            iBR.set_byte_pos(lCurrentItem + 2);
+            byte lNumItemsBytes[] = iBR.get_bytes(2);
+            lNumItems = lNumItemsBytes[1] << 8 | lNumItemsBytes[0];
 
-            long lNumItems = iBR.read(16);
-
-            long lVersionNr = iBR.read(16);
-
-            if ( lVersionNr == 96 )
+            if(lNumItems > 0)
             {
-                readItems(lNumItems);
-            }else{
-                throw new Exception("Stash Version Incorrect!");
+                readItems(lNumItems, i+1);
             }
         }
     }
 
-    private long calculateAtmaCheckSum()
+    /*private long calculateAtmaCheckSum()
     {
         long lCheckSum;
         lCheckSum = 0;
@@ -188,18 +221,18 @@ public class D2Stash
 
 //		System.err.println("Test " + lOriginal + " - " + lCheckSum + " = " + (lOriginal == lCheckSum) );
         return lCheckSum;
-    }
+    }*/
 
-    private void readItems(long pNumItems) throws Exception
+    private void readItems(long pNumItems, long pStashPage) throws Exception
     {
-        int lLastItemEnd = 11;
 
         for ( int i = 0 ; i < pNumItems ; i++ )
         {
-            int lItemStart = iBR.findNextFlag("JM", lLastItemEnd);
+            int lItemStart = iBR.findNextFlag("JM", iBR.get_byte_pos());
 
             D2Item lItem = new D2Item(iFileName, iBR, lItemStart, iCharLvl);
-            lLastItemEnd = lItemStart + lItem.getItemLength();
+            lItem.setStashPage(pStashPage);
+            iBR.set_byte_pos(lItemStart + lItem.getItemLength());
             iItems.add(lItem);
         }
     }

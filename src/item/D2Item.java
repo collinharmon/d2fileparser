@@ -178,6 +178,8 @@ public class D2Item implements Comparable, D2ItemInterface {
 
     private boolean iIsChar;
 
+    private boolean iIsShared;
+
     private int iCharLvl;
 
     private int iReqLvl = -1;
@@ -185,6 +187,8 @@ public class D2Item implements Comparable, D2ItemInterface {
     private int iReqStr = -1;
 
     private int iReqDex = -1;
+
+    private long iStashPage = -1;    //if inventory item or equipped, default to -1
 
     private String iSetName;
 
@@ -198,13 +202,19 @@ public class D2Item implements Comparable, D2ItemInterface {
             throws Exception {
         iFileName = pFileName;
         iIsChar = iFileName.endsWith(".d2s");
+        iIsShared = iFileName.endsWith(".sss");
+        //maybe need a iIsSss
         iCharLvl = (int) pCharLvl;
 
         try {
             pFile.set_byte_pos(pPos);
-            read_item(pFile, pPos);
+            read_item(pFile);
             int lCurrentReadLength = pFile.get_pos() - pPos * 8;
             int lNextJMPos = pFile.findNextFlag("JM", pFile.get_byte_pos());
+            int lNextSTPos = pFile.findNextFlag("ST", pFile.get_byte_pos());
+
+            if(lNextSTPos < lNextJMPos && lNextSTPos != -1) lNextJMPos = lNextSTPos;
+
             int lLengthToNextJM = lNextJMPos - pPos;
 
             if (lLengthToNextJM < 0) {
@@ -259,7 +269,7 @@ public class D2Item implements Comparable, D2ItemInterface {
     // read basic information from the bytes
     // common to all items, then split based on
     // whether the item is an ear
-    private void read_item(D2BitReader pFile, int pos) throws Exception {
+    private void read_item(D2BitReader pFile) throws Exception {
         pFile.skipBytes(2);
         flags = (int) pFile.unflip(pFile.read(32), 32); // 4 bytes
 
@@ -1462,9 +1472,16 @@ public class D2Item implements Comparable, D2ItemInterface {
     }
 
 
+    public boolean isIdentified() {
+        return iIdentified;
+    }
 
     public boolean isBelt() {
         return iBelt;
+    }
+
+    public boolean isThrowable() {
+        return iThrow;
     }
 
     public boolean isCharm() {
@@ -1586,6 +1603,22 @@ public class D2Item implements Comparable, D2ItemInterface {
         return "UNKNOWN";
     }
 
+    public int getCurrDur() {
+        return iCurDur;
+    }
+
+    public short[] getDmg1(){
+        return i1Dmg;
+    }
+
+    public short[] getDmg2(){
+        return i2Dmg;
+    }
+
+    public int getMaxDur() {
+        return iMaxDur;
+    }
+
     public long getSocketNrFilled() {
         return iSocketNrFilled;
     }
@@ -1606,6 +1639,10 @@ public class D2Item implements Comparable, D2ItemInterface {
         return iItemName;
     }
 
+    public String getItemType() {
+        return item_type;
+    }
+
     public String getName() {
         return iItemName;
     }
@@ -1614,8 +1651,8 @@ public class D2Item implements Comparable, D2ItemInterface {
         return iFP;
     }
 
-    public String getILvl() {
-        return Short.toString(ilvl);
+    public short getILvl() {
+        return ilvl;
     }
 
     public int getReqLvl() {
@@ -1657,6 +1694,10 @@ public class D2Item implements Comparable, D2ItemInterface {
             return Color.gray;
         }
         return Color.white;
+    }
+
+    public boolean isBody() {
+        return iBody;
     }
 
     public boolean isUnique() {
@@ -1774,6 +1815,10 @@ public class D2Item implements Comparable, D2ItemInterface {
         return (int) iDef;
     }
 
+    public int getInitDef() {
+        return (int) iInitDef;
+    }
+
     public boolean isCharacterItem(){
 
         //Belt or equipped
@@ -1864,6 +1909,14 @@ public class D2Item implements Comparable, D2ItemInterface {
 
     public String getSetName() {
         return iSetName;
+    }
+
+    public long getStashPage() {
+        return iStashPage;
+    }
+
+    public void setStashPage(long pStashPage) {
+        iStashPage = pStashPage;
     }
 
     public boolean statModding() {
@@ -2560,6 +2613,10 @@ public class D2Item implements Comparable, D2ItemInterface {
         return (int) this.cBlock;
     }
 
+    public int getIBlock() {
+        return (int) this.iBlock;
+    }
+
     public boolean isABelt() {
         if (iType.equals("belt")) {
             return true;
@@ -2570,6 +2627,10 @@ public class D2Item implements Comparable, D2ItemInterface {
 
     public D2PropCollection getPropCollection() {
         return iProps;
+    }
+
+    public ArrayList getSocketedItems(){
+        return iSocketedItems;
     }
 
     public String getItemQuality() {

@@ -116,6 +116,10 @@ public class D2Prop {
         return funcN;
     }
 
+    public boolean getOpApplied(){
+        return opApplied;
+    }
+
     public void modifyVals(int funcN, int[] pVals){
 
         this.funcN = funcN;
