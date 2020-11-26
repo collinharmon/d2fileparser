@@ -1334,7 +1334,6 @@ public class D2Item implements Comparable, D2ItemInterface {
         if (iReqLvl > 0)dispStr.append("Required Level: " + iReqLvl + "<br>&#10;");
         if (iReqStr > 0)dispStr.append("Required Strength: " + iReqStr + "<br>&#10;");
         if (iReqDex > 0)dispStr.append("Required Dexterity: " + iReqDex + "<br>&#10;");
-        if (iFP != null)dispStr.append("Fingerprint: " + iFP + "<br>&#10;");
         if (iGUID != null)dispStr.append("GUID: " + iGUID + "<br>&#10;");
         if (ilvl != 0)dispStr.append("Item Level: " + ilvl + "<br>&#10;");
         dispStr.append("Version: " + get_version() + "<br>&#10;");
@@ -1748,6 +1747,31 @@ public class D2Item implements Comparable, D2ItemInterface {
 
     public boolean isRune() {
         return getRuneCode() != null;
+    }
+
+    public String getItemCategory(){
+        if(getItemType().equals("rin")) return "ring";
+        else if(getItemType().equals("amu")) return "amulet";
+        else if(isCharmSmall()) return "smallcharm";
+        else if(isCharmLarge()) return "largecharm";
+        else if(isCharmGrand()) return "grandcharm";
+        else if(isRune()) return "rune";
+        else if (isGem()) return "gem";
+        else if (isTypeWeapon()) return "weapon";
+        else if(isTypeArmor()) return "armor";
+        else if(isTypeMisc()) return "misc";
+        else return "other";
+    }
+
+    public String getItemKind(){
+        if(isNormal()) return "normal";
+        else if(isMagical()) return "magic";
+        else if(isRare()) return "rare";
+        else if(isUnique()) return "unique";
+        else if(isSet()) return "set";
+        else if(isRuneWord()) return "runeword";
+        else if(isCrafted()) return "crafted";
+        else return "other";
     }
 
     public String getRuneCode() {

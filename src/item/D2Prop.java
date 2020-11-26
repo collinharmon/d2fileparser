@@ -133,7 +133,7 @@ public class D2Prop {
             return null;
         }
 
-        String oString = D2TblFile.getString(D2TxtFile.ITEM_STAT_COST.getRow(pNum).get("descstrpos"));
+        String oString = D2TblFile.getString(D2TxtFile.ITEM_STAT_COST.getRow(pNum).get("descstrpos")); //rather than getRow then .get, we can just call the function getting called within get. its needleslly complicated
 
         //FUNCTION 0 means that you should use the txt files to find the print function to use. Otherwise, it should be a case of looking for custom funcs
         if(funcN == 0){

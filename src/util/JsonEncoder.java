@@ -21,44 +21,80 @@ public class JsonEncoder {
         d2Character = d2Char;
     }
 
-    public JSONObject generateJsonStash(){
+    public ArrayList generateJsonStash(){
 
-        JSONObject obj = new JSONObject();
+        ArrayList<JSONObject> fullStash = new ArrayList<JSONObject>();
 
-        obj.put("numItems", d2Stash.getNrItems());
-        obj.put("isShared", d2Stash.isSharedStash());
-        obj.put("numStashes", d2Stash.getNrStashes());
-        obj.put("sharedGold", d2Stash.getSharedGold());
-        obj.put("filename", d2Stash.getFilename());
+        JSONObject stashData = new JSONObject();
 
-        JSONArray itemList = getJSONItemList(d2Stash.getItemList());
+        stashData.put("numItems", d2Stash.getNrItems());
+        stashData.put("isShared", d2Stash.isSharedStash());
+        if (d2Stash.isSharedStash()){
+            stashData.put("stashOwner", "shared");
+        }
+        else{
+            //temp
+            stashData.put("stashOwner", "player");
+        }
+        stashData.put("numStashes", d2Stash.getNrStashes());
+        stashData.put("sharedGold", d2Stash.getSharedGold());
+        stashData.put("filename", d2Stash.getFilename());
 
-        obj.put("Items", itemList);
+        fullStash.add(stashData);
 
-        return obj;
+
+
+        fullStash.addAll(getJSONItemList(d2Stash.getItemList()));
+
+        return fullStash;
     }
 
-    private JSONArray getJSONItemList(ArrayList items){
+    private ArrayList getJSONItemList(ArrayList items){
 
-        JSONArray jsonItems = new JSONArray();
+        ArrayList<JSONObject> jsonItemListObjs = new ArrayList<JSONObject>();
+        //JSONArray jsonProps = new JSONArray();
 
-        for(int i = 0; i < items.size(); i++){
-            D2Item currItem = (D2Item) items.get(i);
-            JSONObject jsonItem = new JSONObject();
+        int totalNumItemsToProcess = items.size();
+        int numItems;
+        int jsonItemFiles = 1;
+        if(totalNumItemsToProcess > 1000){
+            jsonItemFiles = (int)Math.ceil(((double)totalNumItemsToProcess/1000));
+            numItems = 1000;
+        }
+        else numItems = totalNumItemsToProcess;
 
-            jsonItem.put("Props", getJSONPropsList(currItem.getPropCollection()));
-            if(currItem.getSocketNrFilled() > 0)
-                jsonItem.put("SocketedItems", getJSONSocketedItemsList(currItem.getSocketedItems()) );
-            else
-                jsonItem.put("SocketedItems", null);
+        for(int numFiles = 0; numFiles < jsonItemFiles; numFiles++) {
+            JSONArray jsonItems = new JSONArray();
+            JSONObject arrayList = new JSONObject();
+            int offset = numFiles * 1000;
+            for (int i = 0; i < numItems; i++) {
+                D2Item currItem = (D2Item) items.get(offset+i);
+                JSONObject jsonItem = new JSONObject();
 
-            JSONObject jsonItemData = getJSONItemData(currItem);
-            jsonItem.putAll(jsonItemData);
+                /*Not interested in gathering prop/socketed data yet*/
+                //jsonItem.put("Props", getJSONPropsList(currItem.getPropCollection()));
+                //if(currItem.getSocketNrFilled() > 0)
+                //jsonItem.put("SocketedItems", getJSONSocketedItemsList(currItem.getSocketedItems()) );
+                //else
+                //jsonItem.put("SocketedItems", null);
 
-            jsonItems.add(jsonItem);
+                JSONObject jsonItemData = getJSONItemData(currItem);
+                jsonItem.putAll(jsonItemData);
+
+                jsonItems.add(jsonItem);
+            }
+            arrayList.put("Items", jsonItems);
+            jsonItemListObjs.add(arrayList);
+            /*subtract number of items just processed*/
+            totalNumItemsToProcess -= numItems;
+            if(totalNumItemsToProcess > 0){
+                if(totalNumItemsToProcess/1000 == 0) numItems = totalNumItemsToProcess % 1000;
+                else numItems = 1000;
+            }
+            else break;
         }
 
-        return jsonItems;
+        return jsonItemListObjs;
     }
 
     private JSONArray getJSONPropsList(D2PropCollection props){
@@ -110,44 +146,34 @@ public class JsonEncoder {
 
         JSONObject jsonItemData = new JSONObject();
 
-        jsonItemData.put("fingerprint", item.getFingerprint());
         jsonItemData.put("itemType", item.getItemType());
+        jsonItemData.put("html", item.itemDumpHtml(false));
         jsonItemData.put("itemName", item.getItemName());
         jsonItemData.put("baseItemName", item.getBaseItemName());
+        jsonItemData.put("itemCategory", item.getItemCategory());
+        jsonItemData.put("itemKind", item.getItemKind());
+        ///
         jsonItemData.put("width", item.get_width());
         jsonItemData.put("height", item.get_height());
+        /////
         jsonItemData.put("socketed", item.isSocketed());
         jsonItemData.put("totalSockets", item.getSocketNrTotal());
         jsonItemData.put("socketsFilled", item.getSocketNrFilled());
-        jsonItemData.put("lvl", item.getILvl());
+        jsonItemData.put("level", item.getILvl());
         jsonItemData.put("quality", item.getItemQuality());
         jsonItemData.put("ethereal", item.isEthereal());
         jsonItemData.put("throwable", item.isThrowable());
-        jsonItemData.put("magical", item.isMagical());
-        jsonItemData.put("rare", item.isRare());
-        jsonItemData.put("crafted", item.isCrafted());
-        jsonItemData.put("set", item.isSet());
-        jsonItemData.put("unique", item.isUnique());
-        jsonItemData.put("runeword", item.isRuneWord());
-        jsonItemData.put("smallcharm", item.isCharmSmall());
-        jsonItemData.put("largecharm", item.isCharmLarge());
-        jsonItemData.put("grandcharm", item.isCharmGrand());
-        jsonItemData.put("jewel", item.isJewel());
-        jsonItemData.put("gem", item.isGem());
         jsonItemData.put("stackable", item.isStackable());
-        jsonItemData.put("rune", item.isRune());
-        jsonItemData.put("typeMisc", item.isTypeMisc());
         jsonItemData.put("identified", item.isIdentified());
-        jsonItemData.put("typeWeapon", item.isTypeWeapon());
-        jsonItemData.put("typeArmor", item.isTypeArmor());
         jsonItemData.put("currDur", item.getCurrDur());
         jsonItemData.put("maxDur", item.getMaxDur());
         jsonItemData.put("defense", item.getiDef());
         jsonItemData.put("cBlock", item.getBlock());
-        jsonItemData.put("iBlock", item.getIBlock());
+        jsonItemData.put("iBlock", item.getIBlock()); //think is chance to block
         jsonItemData.put("initDef", item.getInitDef());
-        
-        short[] dmg1 = item.getDmg1();
+
+        /*May look into getting damage later*/
+        /*short[] dmg1 = item.getDmg1();
         if(dmg1 != null){
             JSONArray damage1 = new JSONArray();
             for(int i = 0; i < dmg1.length; i++) damage1.add(dmg1[i]);
@@ -163,17 +189,13 @@ public class JsonEncoder {
             jsonItemData.put("Dmg2", damage2);
         } else{
             jsonItemData.put("Dmg2", null);
-        }
+        }*/
 
-        jsonItemData.put("body", item.isBody());
-        jsonItemData.put("belt", item.isBelt());
-        jsonItemData.put("isChar", item.isCharacterItem());
         jsonItemData.put("reqLvl", item.getReqLvl());
         jsonItemData.put("reqStr", item.getReqStr());
         jsonItemData.put("reqDex", item.getReqDex());
         jsonItemData.put("stashPage", item.getStashPage());
         jsonItemData.put("setName", item.getSetName());
-        jsonItemData.put("itemQuality", item.getItemQuality());
         jsonItemData.put("setID", item.getSetID());
 
         return jsonItemData;
