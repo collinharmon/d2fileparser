@@ -1556,6 +1556,14 @@ public class D2Item implements Comparable, D2ItemInterface {
         return location;
     }
 
+    public String getBodyLoc1(){
+        return iBodyLoc1;
+    }
+
+    public String getBodyLoc2(){
+        return iBodyLoc2;
+    }
+
     public short get_body_position() {
         return body_position;
     }
@@ -2667,6 +2675,18 @@ public class D2Item implements Comparable, D2ItemInterface {
 
     public boolean isCharacter() {
         return iIsChar;
+    }
+
+    public String getiType() {
+        return iType;
+    }
+
+    public String getiType2() {
+        return iType2;
+    }
+
+    public String getItem_type() {
+        return item_type;
     }
 
     public void refreshItemMods(){

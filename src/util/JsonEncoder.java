@@ -152,6 +152,12 @@ public class JsonEncoder {
         jsonItemData.put("baseItemName", item.getBaseItemName());
         jsonItemData.put("itemCategory", item.getItemCategory());
         jsonItemData.put("itemKind", item.getItemKind());
+        jsonItemData.put("type1", item.getiType());   //this is "rune" for runes and like "gemd", "gemr", "gema" etc. for diamond, ruby ametheyst respectively
+        if(item.isRune())  jsonItemData.put("type2", item.getItem_type());
+        else if(item.isGem()) jsonItemData.put("type2", item.getiType2());   //type2 if rune will be r01, r02, r03, etc for runes, and gem0-gem4 for the gem qualities
+
+        jsonItemData.put("bodyLocation1", (item.getBodyLoc1() == null ? "none" : item.getBodyLoc1()));
+        jsonItemData.put("bodyLocation2", (item.getBodyLoc2() == null ? "none" : item.getBodyLoc2()));
         ///
         jsonItemData.put("width", item.get_width());
         jsonItemData.put("height", item.get_height());
